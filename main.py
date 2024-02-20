@@ -18,12 +18,28 @@ class Game:
 
         self.movement = [False, False]
 
+        self.rect = pygame.Rect(20, 10, 30, 200)
+
     def run(self) -> None:
         clock = pygame.time.Clock()
 
         while True:
             self.player_pos.x += self.movement[1] - self.movement[0]
+
             self.display.fill((100, 100, 200))
+
+            player_hitbox = pygame.Rect(
+                self.player_pos.x,
+                self.player_pos.y,
+                self.player_img.get_width(),
+                self.player_img.get_height(),
+            )
+
+            if player_hitbox.colliderect(self.rect):
+                pygame.draw.rect(self.display, (200, 0, 0), self.rect)
+            else:
+                pygame.draw.rect(self.display, (0, 200, 0), self.rect)
+
             self.display.blit(self.player_img, self.player_pos)
 
             self.handleEvents()
