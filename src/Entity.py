@@ -16,11 +16,11 @@ class Entity:
         self._position = position
         self._velocity = Vec2(0, 0)
 
-    def update(self, tilemap: Tilemap, movement: Vec2) -> None:
+    def update(self, tilemap: Tilemap, movement: Vec2 = Vec2(0, 0)) -> None:
         frame_movement = movement + self._velocity
 
         self._position.x += frame_movement.x
-        entity_rect = self._get_rect()
+        entity_rect = self.get_rect()
 
         for tile_rect in tilemap.get_physics_rects_around(self._position):
             if entity_rect.colliderect(tile_rect):
@@ -32,7 +32,7 @@ class Entity:
                 self._position.x = entity_rect.x
 
         self._position.y += frame_movement.y
-        entity_rect = self._get_rect()
+        entity_rect = self.get_rect()
 
         for tile_rect in tilemap.get_physics_rects_around(self._position):
             if entity_rect.colliderect(tile_rect):
@@ -46,10 +46,13 @@ class Entity:
 
         self._velocity.y = min(TERMINAL_VELOCITY, self._velocity.y + G_FORCE)
 
-    def _get_rect(self) -> pygame.Rect:
+    def get_rect(self) -> pygame.Rect:
         return pygame.Rect(self._position, self._size)
 
     def render(
-        self, display: pygame.Surface, assets: dict[str, pygame.Surface]
+        self,
+        display: pygame.Surface,
+        assets: dict[str, pygame.Surface],
+        offset: Vec2 = Vec2(0, 0),
     ) -> None:
-        display.blit(assets[self._type], self._position)
+        display.blit(assets[self._type], self._position - offset)

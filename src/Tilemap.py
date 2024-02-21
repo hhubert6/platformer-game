@@ -39,14 +39,18 @@ class Tilemap:
             }
 
     def render(
-        self, display: pygame.Surface, assets: dict[str, list[pygame.Surface]]
+        self,
+        display: pygame.Surface,
+        assets: dict[str, list[pygame.Surface]],
+        offset: Vec2 = Vec2(0, 0),
     ) -> None:
         for tile in self._offgrid_tiles:
-            display.blit(assets[tile["type"]][tile["variant"]], tile["pos"])
+            pos = Vec2(tile["pos"]) - offset
+            display.blit(assets[tile["type"]][tile["variant"]], pos)
 
         for pos in self._tiles:
             tile = self._tiles[pos]
-            dest = pos[0] * self._tile_size, pos[1] * self._tile_size
+            dest = Vec2(pos) * self._tile_size - offset
             display.blit(assets[tile["type"]][tile["variant"]], dest)
 
     def _get_tiles_around(self, position: Vec2) -> Iterator[dict]:
