@@ -5,7 +5,7 @@ import sys
 import pygame
 from pygame import Vector2 as Vec2
 
-from Clouds import Clouds
+from src.Clouds import Clouds
 from src.Entity import Entity
 from src.Tilemap import Tilemap
 from src.utils import load_image, load_images
@@ -30,7 +30,7 @@ class Game:
         self.clouds = Clouds(self.assets["clouds"])
 
         self.movement = [False, False]
-        self.player = Entity("player", Vec2(50, 50), Vec2(8, 15))
+        self.player = Entity("player", Vec2(100, 100), Vec2(8, 15))
 
         self.camera_offset = Vec2(0, 0)
 
