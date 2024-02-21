@@ -1,15 +1,19 @@
+from __future__ import annotations
+
 import sys
 
 import pygame
+from pygame import Vector2 as Vec2
 
+from src.Entity import Entity
 from src.utils import load_image, load_images
 
 
 class Game:
     def __init__(self) -> None:
         pygame.init()
-        self.screen = pygame.display.set_mode((720, 720))
-        self.display = pygame.Surface((320, 320))
+        self.screen = pygame.display.set_mode((640, 480))
+        self.display = pygame.Surface((320, 240))
 
         self.assets = {
             "player": load_image("entities/player.png"),
@@ -18,40 +22,24 @@ class Game:
             "stone": load_images("tiles/stone"),
         }
 
-        self.player_pos = pygame.Vector2(100, 100)
-
         self.movement = [False, False]
-
-        self.rect = pygame.Rect(20, 10, 30, 200)
+        self.player = Entity("player", Vec2(50, 50), Vec2(8, 15))
 
     def run(self) -> None:
         clock = pygame.time.Clock()
 
         while True:
-            self.player_pos.x += self.movement[1] - self.movement[0]
+            self.player.update(Vec2(self.movement[1] - self.movement[0], 0))
 
             self.display.fill((100, 100, 200))
+            self.player.render(self.display, self.assets)
 
-            player_hitbox = pygame.Rect(
-                self.player_pos.x,
-                self.player_pos.y,
-                self.assets["player"].get_width(),
-                self.assets["player"].get_height(),
-            )
-
-            if player_hitbox.colliderect(self.rect):
-                pygame.draw.rect(self.display, (200, 0, 0), self.rect)
-            else:
-                pygame.draw.rect(self.display, (0, 200, 0), self.rect)
-
-            self.display.blit(self.assets["player"], self.player_pos)
-
-            self.handleEvents()
-            self.updateScreen()
+            self._handle_events()
+            self._update_screen()
 
             clock.tick(60)
 
-    def handleEvents(self) -> None:
+    def _handle_events(self) -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -67,7 +55,7 @@ class Game:
                 if event.key == pygame.K_a:
                     self.movement[0] = False
 
-    def updateScreen(self) -> None:
+    def _update_screen(self) -> None:
         self.screen.blit(
             pygame.transform.scale(
                 self.display, (self.screen.get_width(), self.screen.get_height())
