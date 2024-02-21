@@ -6,6 +6,7 @@ import pygame
 from pygame import Vector2 as Vec2
 
 from src.Entity import Entity
+from src.Tilemap import Tilemap
 from src.utils import load_image, load_images
 
 
@@ -22,6 +23,8 @@ class Game:
             "stone": load_images("tiles/stone"),
         }
 
+        self.tilemap = Tilemap(tile_size=16)
+
         self.movement = [False, False]
         self.player = Entity("player", Vec2(50, 50), Vec2(8, 15))
 
@@ -32,6 +35,7 @@ class Game:
             self.player.update(Vec2(self.movement[1] - self.movement[0], 0))
 
             self.display.fill((100, 100, 200))
+            self.tilemap.render(self.display, self.assets)
             self.player.render(self.display, self.assets)
 
             self._handle_events()

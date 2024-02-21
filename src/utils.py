@@ -20,9 +20,17 @@ def load_image(path: str) -> pygame.Surface:
 
 
 def load_images(path: str) -> list[pygame.Surface]:
+    """Load images from assets/image/ directory
+
+    Args:
+        path (str): relative path to directory with images in assets/image/
+
+    Returns:
+        list[pygame.Surface]: list of loaded images
+    """
     imgs = []
 
-    for image_path in os.listdir(IMAGES_DIR + path):
+    for image_path in sorted(os.listdir(IMAGES_DIR + path)):
         imgs.append(load_image(path + "/" + image_path))
 
     return imgs
