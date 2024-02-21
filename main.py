@@ -32,7 +32,9 @@ class Game:
         clock = pygame.time.Clock()
 
         while True:
-            self.player.update(Vec2(self.movement[1] - self.movement[0], 0))
+            self.player.update(
+                self.tilemap, Vec2(self.movement[1] - self.movement[0], 0)
+            )
 
             self.display.fill((100, 100, 200))
             self.tilemap.render(self.display, self.assets)
@@ -48,15 +50,17 @@ class Game:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.KEYDOWN:
+            elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_d:
                     self.movement[1] = True
-                if event.key == pygame.K_a:
+                elif event.key == pygame.K_a:
                     self.movement[0] = True
-            if event.type == pygame.KEYUP:
+                elif event.key == pygame.K_w:
+                    self.player._velocity.y = -3
+            elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_d:
                     self.movement[1] = False
-                if event.key == pygame.K_a:
+                elif event.key == pygame.K_a:
                     self.movement[0] = False
 
     def _update_screen(self) -> None:
