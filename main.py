@@ -2,6 +2,8 @@ import sys
 
 import pygame
 
+from src.utils import load_image, load_images
+
 
 class Game:
     def __init__(self) -> None:
@@ -9,11 +11,13 @@ class Game:
         self.screen = pygame.display.set_mode((720, 720))
         self.display = pygame.Surface((320, 320))
 
-        self.player_img = pygame.image.load(
-            "./assets/images/entities/player.png"
-        ).convert()
+        self.assets = {
+            "player": load_image("entities/player.png"),
+            "clouds": load_images("clouds"),
+            "grass": load_images("tiles/grass"),
+            "stone": load_images("tiles/stone"),
+        }
 
-        self.player_img.set_colorkey((0, 0, 0))
         self.player_pos = pygame.Vector2(100, 100)
 
         self.movement = [False, False]
@@ -31,8 +35,8 @@ class Game:
             player_hitbox = pygame.Rect(
                 self.player_pos.x,
                 self.player_pos.y,
-                self.player_img.get_width(),
-                self.player_img.get_height(),
+                self.assets["player"].get_width(),
+                self.assets["player"].get_height(),
             )
 
             if player_hitbox.colliderect(self.rect):
@@ -40,7 +44,7 @@ class Game:
             else:
                 pygame.draw.rect(self.display, (0, 200, 0), self.rect)
 
-            self.display.blit(self.player_img, self.player_pos)
+            self.display.blit(self.assets["player"], self.player_pos)
 
             self.handleEvents()
             self.updateScreen()
