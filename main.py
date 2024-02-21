@@ -5,8 +5,9 @@ import sys
 import pygame
 from pygame import Vector2 as Vec2
 
+from src.Animation import Animation
 from src.Clouds import Clouds
-from src.Entity import Entity
+from src.Player import Player
 from src.Tilemap import Tilemap
 from src.utils import load_image, load_images
 
@@ -14,7 +15,7 @@ from src.utils import load_image, load_images
 class Game:
     def __init__(self) -> None:
         pygame.init()
-        self.screen = pygame.display.set_mode((640, 480))
+        self.screen = pygame.display.set_mode((960, 720))
         self.display = pygame.Surface((320, 240))
         self.display_center = Vec2(self.display.get_size()) / 2
 
@@ -24,13 +25,16 @@ class Game:
             "grass": load_images("tiles/grass"),
             "stone": load_images("tiles/stone"),
             "background": load_image("background.png"),
+            "player/idle": Animation(load_images("entities/player/idle"), duration=6),
+            "player/run": Animation(load_images("entities/player/run"), duration=4),
+            "player/jump": Animation(load_images("entities/player/jump")),
         }
 
-        self.tilemap = Tilemap(tile_size=16)
+        self.tilemap = Tilemap(self.assets, tile_size=16)
         self.clouds = Clouds(self.assets["clouds"])
 
         self.movement = [False, False]
-        self.player = Entity("player", Vec2(100, 100), Vec2(8, 15))
+        self.player = Player(self.assets, Vec2(100, 100), Vec2(8, 15))
 
         self.camera_offset = Vec2(0, 0)
 
@@ -48,8 +52,8 @@ class Game:
             self.display.blit(self.assets["background"], (0, 0))
             render_offset = self._update_camera()
             self.clouds.render(self.display, render_offset)
-            self.tilemap.render(self.display, self.assets, render_offset)
-            self.player.render(self.display, self.assets, render_offset)
+            self.tilemap.render(self.display, render_offset)
+            self.player.render(self.display, render_offset)
 
             self._handle_events()
             self._update_screen()
@@ -72,10 +76,8 @@ class Game:
                     self.movement[1] = True
                 elif event.key == pygame.K_a:
                     self.movement[0] = True
-                elif event.key == pygame.K_w:
-                    self.player._velocity.y = -3
-                elif event.key == pygame.K_SPACE:
-                    self.player._velocity.y = -3
+                elif event.key == pygame.K_w or event.key == pygame.K_SPACE:
+                    self.player.jump()
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_d:
                     self.movement[1] = False

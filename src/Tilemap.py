@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterator
+from typing import Any, Iterator
 
 import pygame
 from pygame import Vector2 as Vec2
@@ -21,7 +21,8 @@ PHYSICS_TILES = {"grass", "stone"}
 
 
 class Tilemap:
-    def __init__(self, tile_size: int = 16) -> None:
+    def __init__(self, assets: dict[str, Any], tile_size: int = 16) -> None:
+        self._assets = assets
         self._tile_size = tile_size
         self._tiles: dict[tuple[int, int], dict] = {}
         self._offgrid_tiles = []
@@ -41,26 +42,23 @@ class Tilemap:
     def render(
         self,
         display: pygame.Surface,
-        assets: dict[str, list[pygame.Surface]],
         offset: Vec2 = Vec2(0, 0),
     ) -> None:
-        self._render_offgrid_tiles(display, assets, offset)
-        self._render_grid_tiles(display, assets, offset)
+        self._render_offgrid_tiles(display, offset)
+        self._render_grid_tiles(display, offset)
 
     def _render_offgrid_tiles(
         self,
         display: pygame.Surface,
-        assets: dict[str, list[pygame.Surface]],
         offset: Vec2,
     ) -> None:
         for tile in self._offgrid_tiles:
             pos = Vec2(tile["pos"]) - offset
-            display.blit(assets[tile["type"]][tile["variant"]], pos)
+            display.blit(self._assets[tile["type"]][tile["variant"]], pos)
 
     def _render_grid_tiles(
         self,
         display: pygame.Surface,
-        assets: dict[str, list[pygame.Surface]],
         offset: Vec2,
     ) -> None:
         for x in range(
@@ -75,7 +73,7 @@ class Tilemap:
                 if pos in self._tiles:
                     tile = self._tiles[pos]
                     dest = Vec2(pos) * self._tile_size - offset
-                    display.blit(assets[tile["type"]][tile["variant"]], dest)
+                    display.blit(self._assets[tile["type"]][tile["variant"]], dest)
 
     def _get_tiles_around(self, position: Vec2) -> Iterator[dict]:
         tile_x = int(position.x // self._tile_size)
