@@ -5,6 +5,7 @@ import sys
 import pygame
 from pygame import Vector2 as Vec2
 
+from Clouds import Clouds
 from src.Entity import Entity
 from src.Tilemap import Tilemap
 from src.utils import load_image, load_images
@@ -26,6 +27,7 @@ class Game:
         }
 
         self.tilemap = Tilemap(tile_size=16)
+        self.clouds = Clouds(self.assets["clouds"])
 
         self.movement = [False, False]
         self.player = Entity("player", Vec2(50, 50), Vec2(8, 15))
@@ -36,16 +38,16 @@ class Game:
         clock = pygame.time.Clock()
 
         while True:
+            # update each game element
             self.player.update(
                 self.tilemap, Vec2(self.movement[1] - self.movement[0], 0)
             )
+            self.clouds.update()
 
-            self.camera_offset += (
-                self.player.get_rect().center - self.display_center - self.camera_offset
-            ) / 20
-            render_offset = Vec2(int(self.camera_offset.x), int(self.camera_offset.y))
-
+            # render everything to the display
             self.display.blit(self.assets["background"], (0, 0))
+            render_offset = self._update_camera()
+            self.clouds.render(self.display, render_offset)
             self.tilemap.render(self.display, self.assets, render_offset)
             self.player.render(self.display, self.assets, render_offset)
 
@@ -53,6 +55,12 @@ class Game:
             self._update_screen()
 
             clock.tick(60)
+
+    def _update_camera(self) -> Vec2:
+        self.camera_offset += (
+            self.player.get_rect().center - self.display_center - self.camera_offset
+        ) / 20
+        return Vec2(int(self.camera_offset.x), int(self.camera_offset.y))
 
     def _handle_events(self) -> None:
         for event in pygame.event.get():
@@ -76,10 +84,7 @@ class Game:
 
     def _update_screen(self) -> None:
         self.screen.blit(
-            pygame.transform.scale(
-                self.display, (self.screen.get_width(), self.screen.get_height())
-            ),
-            (0, 0),
+            pygame.transform.scale(self.display, self.screen.get_size()), (0, 0)
         )
         pygame.display.update()
 
