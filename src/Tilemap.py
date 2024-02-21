@@ -44,14 +44,38 @@ class Tilemap:
         assets: dict[str, list[pygame.Surface]],
         offset: Vec2 = Vec2(0, 0),
     ) -> None:
+        self._render_offgrid_tiles(display, assets, offset)
+        self._render_grid_tiles(display, assets, offset)
+
+    def _render_offgrid_tiles(
+        self,
+        display: pygame.Surface,
+        assets: dict[str, list[pygame.Surface]],
+        offset: Vec2,
+    ) -> None:
         for tile in self._offgrid_tiles:
             pos = Vec2(tile["pos"]) - offset
             display.blit(assets[tile["type"]][tile["variant"]], pos)
 
-        for pos in self._tiles:
-            tile = self._tiles[pos]
-            dest = Vec2(pos) * self._tile_size - offset
-            display.blit(assets[tile["type"]][tile["variant"]], dest)
+    def _render_grid_tiles(
+        self,
+        display: pygame.Surface,
+        assets: dict[str, list[pygame.Surface]],
+        offset: Vec2,
+    ) -> None:
+        for x in range(
+            int(offset.x) // self._tile_size,
+            int(offset.x + display.get_width()) // self._tile_size + 1,
+        ):
+            for y in range(
+                int(offset.y) // self._tile_size,
+                int(offset.y + display.get_height()) // self._tile_size + 1,
+            ):
+                pos = x, y
+                if pos in self._tiles:
+                    tile = self._tiles[pos]
+                    dest = Vec2(pos) * self._tile_size - offset
+                    display.blit(assets[tile["type"]][tile["variant"]], dest)
 
     def _get_tiles_around(self, position: Vec2) -> Iterator[dict]:
         tile_x = int(position.x // self._tile_size)
