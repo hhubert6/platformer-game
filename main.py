@@ -20,21 +20,27 @@ class Game:
         self.display_center = Vec2(self.display.get_size()) / 2
 
         self.assets = {
-            "player": load_image("entities/player.png"),
+            "background": load_image("background.png"),
             "clouds": load_images("clouds"),
+            # tiles graphics with variants
             "grass": load_images("tiles/grass"),
             "stone": load_images("tiles/stone"),
-            "background": load_image("background.png"),
+            "decor": load_images("tiles/decor"),
+            "large_decor": load_images("tiles/large_decor"),
+            "spawners": load_images("tiles/spawners"),
+            # player graphics with animations
+            "player": load_image("entities/player.png"),
             "player/idle": Animation(load_images("entities/player/idle"), duration=6),
             "player/run": Animation(load_images("entities/player/run"), duration=4),
             "player/jump": Animation(load_images("entities/player/jump")),
         }
 
         self.tilemap = Tilemap(self.assets, tile_size=16)
+        self.tilemap.load("assets/maps/0.json")
         self.clouds = Clouds(self.assets["clouds"])
 
         self.movement = [False, False]
-        self.player = Player(self.assets, Vec2(100, 100), Vec2(8, 15))
+        self.player = Player(self.assets, Vec2(110, 20), Vec2(8, 15))
 
         self.camera_offset = Vec2(0, 0)
 

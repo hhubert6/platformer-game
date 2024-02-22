@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import Any, Iterator
 
 import pygame
@@ -90,3 +91,20 @@ class Tilemap:
             if tile["type"] in PHYSICS_TILES:
                 rect_pos = Vec2(tile["pos"]) * self._tile_size
                 yield pygame.Rect(rect_pos, (self._tile_size, self._tile_size))
+
+    def load(self, path: str):
+        self._tiles = {}
+
+        with open(path, "r") as f:
+            data = json.load(f)
+
+            self._tile_size = data["tile_size"]
+
+            for key in data["tilemap"]:
+                tile = data["tilemap"][key]
+                pos = tuple(tile["pos"])
+                self._tiles[pos] = tile
+
+            for tile in data["offgrid"]:
+                tile["pos"] = tuple(tile["pos"])
+                self._offgrid_tiles.append(tile)
