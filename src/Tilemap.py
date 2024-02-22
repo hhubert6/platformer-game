@@ -28,18 +28,6 @@ class Tilemap:
         self._tiles: dict[tuple[int, int], dict] = {}
         self._offgrid_tiles = []
 
-        for i in range(10):
-            self._tiles[(10, 3 + i)] = {
-                "type": "stone",
-                "variant": 0,
-                "pos": (10, 3 + i),
-            }
-            self._tiles[(3 + i, 10)] = {
-                "type": "grass",
-                "variant": 0,
-                "pos": (3 + i, 10),
-            }
-
     def render(
         self,
         display: pygame.Surface,

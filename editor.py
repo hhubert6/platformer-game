@@ -76,8 +76,15 @@ class Editor:
                 pos = int(grid_pos.x), int(grid_pos.y)
                 if pos in self.tilemap._tiles:
                     del self.tilemap._tiles[pos]
+            elif self.right_clicking:
+                pos = mouse_pos + render_offset
+                for tile in self.tilemap._offgrid_tiles.copy():
+                    tile_img = self.assets[tile["type"]][tile["variant"]]
+                    rect = pygame.Rect(tile["pos"], tile_img.get_size())
+                    if rect.collidepoint(pos):
+                        self.tilemap._offgrid_tiles.remove(tile)
 
-            self._handle_events()
+            self._handle_events(render_offset)
             self._update_screen()
 
             clock.tick(60)
@@ -91,7 +98,7 @@ class Editor:
         )
         return Vec2(int(self.camera_offset.x), int(self.camera_offset.y))
 
-    def _handle_events(self) -> None:
+    def _handle_events(self, offset: Vec2) -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -133,6 +140,17 @@ class Editor:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     self.clicking = True
+                    if not self.on_grid:
+                        mouse_pos = Vec2(pygame.mouse.get_pos()) * self.render_scale
+                        pos = mouse_pos + offset
+                        self.tilemap._offgrid_tiles.append(
+                            {
+                                "type": self.tiles[self.current_type],
+                                "variant": self.current_variant,
+                                "pos": tuple(pos),
+                            }
+                        )
+
                 elif event.button == 3:
                     self.right_clicking = True
             elif event.type == pygame.MOUSEBUTTONUP:
