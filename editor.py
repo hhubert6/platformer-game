@@ -27,6 +27,12 @@ class Editor:
         }
 
         self.tilemap = Tilemap(self.assets, tile_size=16)
+
+        try:
+            self.tilemap.load("map.json")
+        except FileNotFoundError:
+            pass
+
         self.movement = [False, False, False, False]
         self.camera_offset = Vec2(0, 0)
 
@@ -128,6 +134,10 @@ class Editor:
                     )
                 elif event.key == pygame.K_g:
                     self.on_grid = not self.on_grid
+                elif event.key == pygame.K_o:
+                    self.tilemap.save("map.json")
+                elif event.key == pygame.K_t:
+                    self.tilemap.autotile()
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_a:
                     self.movement[0] = False
@@ -150,7 +160,6 @@ class Editor:
                                 "pos": tuple(pos),
                             }
                         )
-
                 elif event.button == 3:
                     self.right_clicking = True
             elif event.type == pygame.MOUSEBUTTONUP:

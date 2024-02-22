@@ -17,8 +17,22 @@ NEIGHBOURS_OFFSETS = [
     (1, 0),
     (1, 1),
 ]
+AUTOTILE_NEIGHBOURS_OFFSETS = [(-1, 0), (0, -1), (1, 0), (0, 1)]
+
+AUTOTILE_RULES = {
+    (2, 3): 0,
+    (0, 2, 3): 1,
+    (0, 3): 2,
+    (0, 1, 3): 3,
+    (0, 1): 4,
+    (0, 1, 2): 5,
+    (1, 2): 6,
+    (1, 2, 3): 7,
+    (0, 1, 2, 3): 8,
+}
 
 PHYSICS_TILES = {"grass", "stone"}
+AUTOTILES_TYPES = {"grass", "stone"}
 
 
 class Tilemap:
@@ -80,7 +94,7 @@ class Tilemap:
                 rect_pos = Vec2(tile["pos"]) * self._tile_size
                 yield pygame.Rect(rect_pos, (self._tile_size, self._tile_size))
 
-    def load(self, path: str):
+    def load(self, path: str) -> None:
         self._tiles = {}
 
         with open(path, "r") as f:
@@ -96,3 +110,37 @@ class Tilemap:
             for tile in data["offgrid"]:
                 tile["pos"] = tuple(tile["pos"])
                 self._offgrid_tiles.append(tile)
+
+    def save(self, path: str) -> None:
+        with open(path, "w") as f:
+            tilemap = {}
+            for x, y in self._tiles:
+                tilemap[f"{x};{y}"] = self._tiles[x, y]
+
+            json.dump(
+                {
+                    "tile_size": self._tile_size,
+                    "tilemap": tilemap,
+                    "offgrid": self._offgrid_tiles,
+                },
+                f,
+            )
+
+    def autotile(self) -> None:
+        for x, y in self._tiles:
+            tile = self._tiles[x, y]
+
+            if tile["type"] not in AUTOTILES_TYPES:
+                continue
+
+            neighbours = []
+
+            for i, (offset_x, offset_y) in enumerate(AUTOTILE_NEIGHBOURS_OFFSETS):
+                pos = x + offset_x, y + offset_y
+                if pos in self._tiles and tile["type"] == self._tiles[pos]["type"]:
+                    neighbours.append(i)
+
+            neighbours = tuple(sorted(neighbours))
+
+            if neighbours in AUTOTILE_RULES:
+                tile["variant"] = AUTOTILE_RULES[neighbours]
