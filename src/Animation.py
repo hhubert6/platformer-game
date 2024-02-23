@@ -11,18 +11,22 @@ class Animation:
         self._duration = duration
         self._loop = loop
         self._done = False
-        self._frames = 0
+        self._frame = 0
 
     def img(self) -> pygame.Surface:
-        return self._images[int(self._frames / self._duration)]
+        return self._images[int(self._frame / self._duration)]
 
     def update(self) -> None:
         if self._loop:
-            self._frames = (self._frames + 1) % (self._duration * len(self._images))
+            self._frame = (self._frame + 1) % (self._duration * len(self._images))
         else:
-            self._frames = min(self._frames + 1, self._duration * len(self._images) - 1)
-            if self._frames >= self._duration * len(self._images) - 1:
+            self._frame = min(self._frame + 1, self._duration * len(self._images) - 1)
+            if self._frame >= self._duration * len(self._images) - 1:
                 self._done = True
 
     def copy(self) -> Animation:
-        return Animation(self._images, self._duration)
+        return Animation(self._images, self._duration, self._loop)
+
+    @property
+    def done(self) -> bool:
+        return self._done
