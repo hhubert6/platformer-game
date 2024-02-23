@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 import sys
 
 import pygame
@@ -46,9 +47,9 @@ class Game:
 
         self.leaf_spawners = []
 
-        tree_img: pygame.Surface = self.assets["large_decor"][2]
-        for tree in self.tilemap.extract("large_decor", variant=2, keep=False):
-            self.leaf_spawners.append(pygame.Rect(tree["pos"], tree_img.get_size()))
+        for tree in self.tilemap.extract("large_decor", variant=2, keep=True):
+            x, y = tree["pos"]
+            self.leaf_spawners.append(pygame.Rect(x + 4, y + 4, 23, 13))
 
     def run(self) -> None:
         clock = pygame.time.Clock()
@@ -59,6 +60,10 @@ class Game:
                 self.tilemap, Vec2(self.movement[1] - self.movement[0], 0)
             )
             self.clouds.update()
+
+            for spawner in self.leaf_spawners:
+                if random.random() < 0.01:
+                    ...
 
             # render everything to the display
             self.display.blit(self.assets["background"], (0, 0))

@@ -97,7 +97,12 @@ class Tilemap:
     def extract(self, type: str, variant: int, keep: bool = False) -> Iterator[dict]:
         for pos, tile in self._tiles.copy().items():
             if tile["type"] == type and tile["variant"] == variant:
-                yield tile
+                tile_copy = tile.copy()
+                tile["pos"] = (
+                    tile["pos"][0] * self._tile_size,
+                    tile["pos"][1] * self._tile_size,
+                )
+                yield tile_copy
                 if not keep:
                     del self._tiles[pos]
 
