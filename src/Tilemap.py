@@ -94,6 +94,19 @@ class Tilemap:
                 rect_pos = Vec2(tile["pos"]) * self._tile_size
                 yield pygame.Rect(rect_pos, (self._tile_size, self._tile_size))
 
+    def extract(self, type: str, variant: int, keep: bool = False) -> Iterator[dict]:
+        for pos, tile in self._tiles.copy().items():
+            if tile["type"] == type and tile["variant"] == variant:
+                yield tile
+                if not keep:
+                    del self._tiles[pos]
+
+        for tile in self._offgrid_tiles.copy():
+            if tile["type"] == type and tile["variant"] == variant:
+                yield tile
+                if not keep:
+                    self._offgrid_tiles.remove(tile)
+
     def load(self, path: str) -> None:
         self._tiles = {}
 

@@ -44,6 +44,12 @@ class Game:
 
         self.camera_offset = Vec2(0, 0)
 
+        self.leaf_spawners = []
+
+        tree_img: pygame.Surface = self.assets["large_decor"][2]
+        for tree in self.tilemap.extract("large_decor", variant=2, keep=False):
+            self.leaf_spawners.append(pygame.Rect(tree["pos"], tree_img.get_size()))
+
     def run(self) -> None:
         clock = pygame.time.Clock()
 
