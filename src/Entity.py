@@ -28,6 +28,10 @@ class Entity:
         self._flip = False
         self._set_action("idle")
 
+    @property
+    def rect(self) -> pygame.Rect:
+        return pygame.Rect(self._position, self._size)
+
     def _set_action(self, action: str) -> None:
         if self._action != action:
             self._action = action
@@ -45,7 +49,7 @@ class Entity:
             self._flip = True
 
         self._position.x += frame_movement.x
-        entity_rect = self.get_rect()
+        entity_rect = self.rect
 
         for tile_rect in tilemap.get_physics_rects_around(self._position):
             if entity_rect.colliderect(tile_rect):
@@ -59,7 +63,7 @@ class Entity:
                 self._position.x = entity_rect.x
 
         self._position.y += frame_movement.y
-        entity_rect = self.get_rect()
+        entity_rect = self.rect
 
         for tile_rect in tilemap.get_physics_rects_around(self._position):
             if entity_rect.colliderect(tile_rect):
@@ -78,9 +82,6 @@ class Entity:
             self._velocity.y = 0
 
         self._animation.update()
-
-    def get_rect(self) -> pygame.Rect:
-        return pygame.Rect(self._position, self._size)
 
     def render(
         self,

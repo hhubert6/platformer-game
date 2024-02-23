@@ -68,7 +68,7 @@ class Game:
 
     def _update_camera(self) -> Vec2:
         self.camera_offset += (
-            self.player.get_rect().center - self.display_center - self.camera_offset
+            self.player.rect.center - self.display_center - self.camera_offset
         ) / 20
         return Vec2(int(self.camera_offset.x), int(self.camera_offset.y))
 
