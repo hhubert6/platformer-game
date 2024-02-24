@@ -22,6 +22,7 @@ class Entity:
         self._position = position
         self._velocity = Vec2(0, 0)
         self._collisions = {"up": False, "down": False, "right": False, "left": False}
+        self._last_movement = Vec2(0, 0)
 
         self._action = ""
         self._anim_offset = Vec2(-3, -3)
@@ -41,6 +42,7 @@ class Entity:
         for key in self._collisions:
             self._collisions[key] = False
 
+        self._last_movement = movement
         frame_movement = movement + self._velocity
 
         if frame_movement.x > 0:

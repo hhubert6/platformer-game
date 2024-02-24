@@ -36,6 +36,7 @@ class Game:
             "player/idle": Animation(load_images("entities/player/idle"), duration=6),
             "player/run": Animation(load_images("entities/player/run"), duration=4),
             "player/jump": Animation(load_images("entities/player/jump")),
+            "player/wall_slide": Animation(load_images("entities/player/wall_slide")),
             # particles animations
             "particle/leaf": Animation(
                 load_images("particles/leaf"), duration=20, loop=False
