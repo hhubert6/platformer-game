@@ -9,9 +9,9 @@ from pygame import Vector2 as Vec2
 
 from src.Animation import Animation
 from src.Clouds import Clouds
-from src.Enemy import Enemy
+from src.entities.Enemy import Enemy
+from src.entities.Player import Player
 from src.Particle import Particle
-from src.Player import Player
 from src.Tilemap import Tilemap
 from src.utils import load_image, load_images
 

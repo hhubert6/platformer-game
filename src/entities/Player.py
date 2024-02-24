@@ -5,7 +5,7 @@ from typing import Any
 from pygame import Surface
 from pygame import Vector2 as Vec2
 
-from src.Entity import Entity
+from src.entities.Entity import Entity
 from src.Particle import Particle
 from src.Tilemap import Tilemap
 
