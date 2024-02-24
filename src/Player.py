@@ -25,6 +25,9 @@ class Player(Entity):
         self._wall_slide = False
         self._dashing = 0
 
+    def set_position(self, position: Vec2) -> None:
+        self._position = position
+
     def update(self, tilemap: Tilemap, movement: Vec2 = Vec2(0, 0)) -> None:
         super().update(tilemap, movement)
 

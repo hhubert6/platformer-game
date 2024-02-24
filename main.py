@@ -47,14 +47,17 @@ class Game:
         }
 
         self.tilemap = Tilemap(self.assets, tile_size=16)
-        self.tilemap.load("assets/maps/0.json")
         self.clouds = Clouds(self.assets["clouds"])
         self.particles: list[Particle] = []
+        self.camera_offset = Vec2(0, 0)
 
         self.movement = [False, False]
-        self.player = Player(self.assets, self.particles, Vec2(110, 20), Vec2(8, 15))
+        self.player = Player(self.assets, self.particles, Vec2(0, 0), Vec2(8, 15))
 
-        self.camera_offset = Vec2(0, 0)
+        self.tilemap.load("assets/maps/0.json")
+
+        player_tile = next(self.tilemap.extract("spawners", 0))
+        self.player.set_position(Vec2(player_tile["pos"]))
 
         self.leaf_spawners: list[pygame.Rect] = []
         for tree in self.tilemap.extract("large_decor", variant=2, keep=True):
