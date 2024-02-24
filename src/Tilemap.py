@@ -98,19 +98,19 @@ class Tilemap:
         for pos, tile in self._tiles.copy().items():
             if tile["type"] == type and tile["variant"] == variant:
                 tile_copy = tile.copy()
-                tile["pos"] = (
+                tile_copy["pos"] = (
                     tile["pos"][0] * self._tile_size,
                     tile["pos"][1] * self._tile_size,
                 )
-                yield tile_copy
                 if not keep:
                     del self._tiles[pos]
+                yield tile_copy
 
         for tile in self._offgrid_tiles.copy():
             if tile["type"] == type and tile["variant"] == variant:
-                yield tile
                 if not keep:
                     self._offgrid_tiles.remove(tile)
+                yield tile
 
     def load(self, path: str) -> None:
         self._tiles = {}
