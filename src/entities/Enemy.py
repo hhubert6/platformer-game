@@ -6,12 +6,22 @@ from pygame import Surface
 from pygame import Vector2 as Vec2
 
 from src.entities.Entity import Entity
+from src.entities.Player import Player
 from src.Tilemap import Tilemap
 
 
 class Enemy(Entity):
-    def __init__(self, assets: dict[str, Any], position: Vec2, size: Vec2) -> None:
+    def __init__(
+        self,
+        assets: dict[str, Any],
+        projectiles: list[list],
+        player: Player,
+        position: Vec2,
+        size: Vec2,
+    ) -> None:
         super().__init__(assets, "enemy", position, size)
+        self._projectiles = projectiles
+        self._player = player
         self._walking = 0
 
     def update(self, tilemap: Tilemap) -> None:
@@ -26,9 +36,11 @@ class Enemy(Entity):
                 self._flip = not self._flip
 
             self._walking -= 1
-        else:
-            if random.random() < 0.01:
-                self._walking = random.randint(30, 120)
+
+            if self._walking == 0:
+                self._shoot()
+        elif random.random() < 0.01:
+            self._walking = random.randint(30, 120)
 
         super().update(tilemap, movement)
 
@@ -36,6 +48,19 @@ class Enemy(Entity):
             self._set_action("run")
         else:
             self._set_action("idle")
+
+    def _shoot(self):
+        dist = self._player._position - self._position
+
+        if abs(dist.y) < 16:
+            if self._flip and dist.x < 0:
+                pos = Vec2(self.rect.centerx - 7, self.rect.centery)
+                dir = -1.5
+                self._projectiles.append([pos, dir, 0])
+            if not self._flip and dist.x > 0:
+                pos = Vec2(self.rect.centerx + 7, self.rect.centery)
+                dir = 1.5
+                self._projectiles.append([pos, dir, 0])
 
     def render(self, display: Surface, offset: Vec2 = Vec2(0, 0)) -> None:
         super().render(display, offset)

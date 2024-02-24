@@ -42,6 +42,7 @@ class Game:
             "enemy/idle": Animation(load_images("entities/enemy/idle"), duration=6),
             "enemy/run": Animation(load_images("entities/enemy/run"), duration=4),
             "gun": load_image("gun.png"),
+            "projectile": load_image("projectile.png"),
             # particles animations
             "particle/leaf": Animation(
                 load_images("particles/leaf"), duration=20, loop=False
@@ -54,6 +55,7 @@ class Game:
         self.tilemap = Tilemap(self.assets, tile_size=16)
         self.clouds = Clouds(self.assets["clouds"])
         self.particles: list[Particle] = []
+        self.projectiles: list[list] = []  # projectile = [Vec2, direction, timer]
         self.camera_offset = Vec2(0, 0)
 
         self.movement = [False, False]
@@ -66,7 +68,15 @@ class Game:
 
         self.enemies: list[Enemy] = []
         for enemy in self.tilemap.extract("spawners", 1):
-            self.enemies.append(Enemy(self.assets, Vec2(enemy["pos"]), Vec2(8, 15)))
+            self.enemies.append(
+                Enemy(
+                    self.assets,
+                    self.projectiles,
+                    self.player,
+                    Vec2(enemy["pos"]),
+                    Vec2(8, 15),
+                )
+            )
 
         self.leaf_spawners: list[pygame.Rect] = []
         for tree in self.tilemap.extract("large_decor", variant=2, keep=True):
@@ -78,24 +88,32 @@ class Game:
 
         while True:
             # update each game element
-            self.player.update(
-                self.tilemap, Vec2(self.movement[1] - self.movement[0], 0)
-            )
+            player_movement = Vec2(self.movement[1] - self.movement[0], 0)
+            self.player.update(self.tilemap, player_movement)
+
             self.clouds.update()
 
             for enemy in self.enemies:
                 enemy.update(self.tilemap)
 
-            for particle in self.particles.copy():
-                to_remove = particle.update()
+            for p in self.particles.copy():
+                if p.type == "leaf":
+                    p.position.x += math.sin(p.animation_frame * 0.035) * 0.3
+                if p.update():
+                    self.particles.remove(p)
 
-                if particle.type == "leaf":
-                    particle.position.x += (
-                        math.sin(particle.animation_frame * 0.035) * 0.3
+            for projectile in self.projectiles.copy():
+                projectile[0].x += projectile[1]
+                projectile[2] += 1
+                if (
+                    self.tilemap.check_solid_tile(projectile[0])
+                    or projectile[2] > 360
+                    or (
+                        self.player._dashing < 50
+                        and self.player.rect.collidepoint(projectile[0])
                     )
-
-                if to_remove:
-                    self.particles.remove(particle)
+                ):
+                    self.projectiles.remove(projectile)
 
             # spawn leafs
             for spawner in self.leaf_spawners:
@@ -113,6 +131,15 @@ class Game:
             self.tilemap.render(self.display, render_offset)
             for enemy in self.enemies:
                 enemy.render(self.display, render_offset)
+            for projectile in self.projectiles:
+                img: pygame.Surface = self.assets["projectile"]
+                self.display.blit(
+                    img,
+                    (
+                        projectile[0].x - img.get_width() / 2 - render_offset.x,
+                        projectile[0].y - img.get_height() / 2 - render_offset.y,
+                    ),
+                )
             self.player.render(self.display, render_offset)
             for particle in self.particles:
                 particle.render(self.display, render_offset)
@@ -150,7 +177,7 @@ class Game:
 
     def _update_screen(self) -> None:
         self.screen.blit(
-            pygame.transform.scale(self.display, self.screen.get_size()), (0, 0)
+            pygame.transform.scale(self.display, self.screen.get_size()), (8, 8)
         )
         pygame.display.update()
 
