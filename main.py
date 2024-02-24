@@ -56,17 +56,27 @@ class Game:
         self.clouds = Clouds(self.assets["clouds"])
         self.particles: list[Particle] = []
         self.projectiles: list[list] = []  # projectile = [Vec2, direction, timer]
+        self.enemies: list[Enemy] = []
+        self.leaf_spawners: list[pygame.Rect] = []
         self.camera_offset = Vec2(0, 0)
 
         self.movement = [False, False]
         self.player = Player(self.assets, self.particles, Vec2(0, 0), Vec2(8, 15))
 
-        self.tilemap.load("assets/maps/0.json")
+        self.load_level(0)
+
+    def load_level(self, map_id: int) -> None:
+        self.particles.clear()
+        self.projectiles.clear()
+        self.enemies.clear()
+        self.leaf_spawners.clear()
+        self.camera_offset = Vec2(0, 0)
+
+        self.tilemap.load(f"assets/maps/{map_id}.json")
 
         player_tile = next(self.tilemap.extract("spawners", 0))
         self.player.set_position(Vec2(player_tile["pos"]))
 
-        self.enemies: list[Enemy] = []
         for enemy in self.tilemap.extract("spawners", 1):
             self.enemies.append(
                 Enemy(
@@ -78,7 +88,6 @@ class Game:
                 )
             )
 
-        self.leaf_spawners: list[pygame.Rect] = []
         for tree in self.tilemap.extract("large_decor", variant=2, keep=True):
             x, y = tree["pos"]
             self.leaf_spawners.append(pygame.Rect(x + 4, y + 4, 23, 13))
@@ -177,7 +186,7 @@ class Game:
 
     def _update_screen(self) -> None:
         self.screen.blit(
-            pygame.transform.scale(self.display, self.screen.get_size()), (8, 8)
+            pygame.transform.scale(self.display, self.screen.get_size()), (0, 0)
         )
         pygame.display.update()
 

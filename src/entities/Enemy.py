@@ -29,8 +29,12 @@ class Enemy(Entity):
 
         if self._walking > 0:
             check_offset = Vec2((-8 if self._flip else 8), 16)
+            check_offset2 = Vec2((-8 if self._flip else 8), 0)
 
-            if tilemap.check_solid_tile(self.rect.center + check_offset):
+            is_groud_ahead = tilemap.check_solid_tile(self.rect.center + check_offset)
+            is_wall_ahead = tilemap.check_solid_tile(self.rect.center + check_offset2)
+
+            if is_groud_ahead and not is_wall_ahead:
                 movement.x = -0.5 if self._flip else 0.5
             else:
                 self._flip = not self._flip
@@ -49,7 +53,7 @@ class Enemy(Entity):
         else:
             self._set_action("idle")
 
-    def _shoot(self):
+    def _shoot(self) -> None:
         dist = self._player._position - self._position
 
         if abs(dist.y) < 16:

@@ -119,6 +119,7 @@ class Tilemap:
 
     def load(self, path: str) -> None:
         self._tiles = {}
+        self._offgrid_tiles = []
 
         with open(path, "r") as f:
             data = json.load(f)
