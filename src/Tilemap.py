@@ -94,6 +94,11 @@ class Tilemap:
                 rect_pos = Vec2(tile["pos"]) * self._tile_size
                 yield pygame.Rect(rect_pos, (self._tile_size, self._tile_size))
 
+    def check_solid_tile(self, position: Vec2) -> bool:
+        x, y = tuple(position // self._tile_size)
+        key = int(x), int(y)
+        return key in self._tiles and self._tiles[key]["type"] in PHYSICS_TILES
+
     def extract(self, type: str, variant: int, keep: bool = False) -> Iterator[dict]:
         for pos, tile in self._tiles.copy().items():
             if tile["type"] == type and tile["variant"] == variant:

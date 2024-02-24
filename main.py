@@ -9,6 +9,7 @@ from pygame import Vector2 as Vec2
 
 from src.Animation import Animation
 from src.Clouds import Clouds
+from src.Enemy import Enemy
 from src.Particle import Particle
 from src.Player import Player
 from src.Tilemap import Tilemap
@@ -37,6 +38,10 @@ class Game:
             "player/run": Animation(load_images("entities/player/run"), duration=4),
             "player/jump": Animation(load_images("entities/player/jump")),
             "player/wall_slide": Animation(load_images("entities/player/wall_slide")),
+            # enemies graphics
+            "enemy/idle": Animation(load_images("entities/enemy/idle"), duration=6),
+            "enemy/run": Animation(load_images("entities/enemy/run"), duration=4),
+            "gun": load_image("gun.png"),
             # particles animations
             "particle/leaf": Animation(
                 load_images("particles/leaf"), duration=20, loop=False
@@ -59,6 +64,10 @@ class Game:
         player_tile = next(self.tilemap.extract("spawners", 0))
         self.player.set_position(Vec2(player_tile["pos"]))
 
+        self.enemies: list[Enemy] = []
+        for enemy in self.tilemap.extract("spawners", 1):
+            self.enemies.append(Enemy(self.assets, Vec2(enemy["pos"]), Vec2(8, 15)))
+
         self.leaf_spawners: list[pygame.Rect] = []
         for tree in self.tilemap.extract("large_decor", variant=2, keep=True):
             x, y = tree["pos"]
@@ -73,6 +82,9 @@ class Game:
                 self.tilemap, Vec2(self.movement[1] - self.movement[0], 0)
             )
             self.clouds.update()
+
+            for enemy in self.enemies:
+                enemy.update(self.tilemap)
 
             for particle in self.particles.copy():
                 to_remove = particle.update()
@@ -99,6 +111,8 @@ class Game:
             render_offset = self._update_camera()
             self.clouds.render(self.display, render_offset)
             self.tilemap.render(self.display, render_offset)
+            for enemy in self.enemies:
+                enemy.render(self.display, render_offset)
             self.player.render(self.display, render_offset)
             for particle in self.particles:
                 particle.render(self.display, render_offset)
