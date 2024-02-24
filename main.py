@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import random
 import sys
 
@@ -8,6 +9,7 @@ from pygame import Vector2 as Vec2
 
 from src.Animation import Animation
 from src.Clouds import Clouds
+from src.Particle import Particle
 from src.Player import Player
 from src.Tilemap import Tilemap
 from src.utils import load_image, load_images
@@ -34,19 +36,26 @@ class Game:
             "player/idle": Animation(load_images("entities/player/idle"), duration=6),
             "player/run": Animation(load_images("entities/player/run"), duration=4),
             "player/jump": Animation(load_images("entities/player/jump")),
+            # particles animations
+            "particle/leaf": Animation(
+                load_images("particles/leaf"), duration=20, loop=False
+            ),
+            "particle/particle": Animation(
+                load_images("particles/particle"), loop=False
+            ),
         }
 
         self.tilemap = Tilemap(self.assets, tile_size=16)
         self.tilemap.load("assets/maps/0.json")
         self.clouds = Clouds(self.assets["clouds"])
+        self.particles: list[Particle] = []
 
         self.movement = [False, False]
         self.player = Player(self.assets, Vec2(110, 20), Vec2(8, 15))
 
         self.camera_offset = Vec2(0, 0)
 
-        self.leaf_spawners = []
-
+        self.leaf_spawners: list[pygame.Rect] = []
         for tree in self.tilemap.extract("large_decor", variant=2, keep=True):
             x, y = tree["pos"]
             self.leaf_spawners.append(pygame.Rect(x + 4, y + 4, 23, 13))
@@ -61,9 +70,25 @@ class Game:
             )
             self.clouds.update()
 
+            for particle in self.particles.copy():
+                to_remove = particle.update()
+
+                if particle.type == "leaf":
+                    particle.position.x += (
+                        math.sin(particle.animation_frame * 0.035) * 0.3
+                    )
+
+                if to_remove:
+                    self.particles.remove(particle)
+
+            # spawn leafs
             for spawner in self.leaf_spawners:
-                if random.random() < 0.01:
-                    ...
+                if random.random() * 39999 < spawner.width * spawner.height:
+                    x = spawner.x + random.random() * spawner.width
+                    y = spawner.y + random.random() * spawner.height
+                    self.particles.append(
+                        Particle(self.assets, "leaf", Vec2(x, y), Vec2(-0.1, 0.3))
+                    )
 
             # render everything to the display
             self.display.blit(self.assets["background"], (0, 0))
@@ -71,6 +96,8 @@ class Game:
             self.clouds.render(self.display, render_offset)
             self.tilemap.render(self.display, render_offset)
             self.player.render(self.display, render_offset)
+            for particle in self.particles:
+                particle.render(self.display, render_offset)
 
             self._handle_events()
             self._update_screen()
