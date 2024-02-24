@@ -52,7 +52,7 @@ class Game:
         self.particles: list[Particle] = []
 
         self.movement = [False, False]
-        self.player = Player(self.assets, Vec2(110, 20), Vec2(8, 15))
+        self.player = Player(self.assets, self.particles, Vec2(110, 20), Vec2(8, 15))
 
         self.camera_offset = Vec2(0, 0)
 
@@ -123,6 +123,8 @@ class Game:
                     self.movement[0] = True
                 elif event.key == pygame.K_w or event.key == pygame.K_SPACE:
                     self.player.jump()
+                elif event.key == pygame.K_j:
+                    self.player.dash()
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_d:
                     self.movement[1] = False
