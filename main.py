@@ -106,8 +106,17 @@ class Game:
 
             self.clouds.update()
 
-            for enemy in self.enemies:
+            for enemy in self.enemies.copy():
                 enemy.update(self.tilemap)
+                if self.player.is_dashing and self.player.rect.colliderect(enemy.rect):
+                    self.enemies.remove(enemy)
+                    self._graphical_explosion(Vec2(enemy.rect.center))
+                    self.sparks.append(
+                        Spark(Vec2(enemy.rect.center), 0, 5 + random.random())
+                    )
+                    self.sparks.append(
+                        Spark(Vec2(enemy.rect.center), math.pi, 5 + random.random())
+                    )
 
             for p in self.particles.copy():
                 if p.type == "leaf":
@@ -136,31 +145,12 @@ class Game:
                             )
                             self.sparks.append(s)
 
-                if self.player._dashing < 50 and self.player.rect.collidepoint(
-                    projectile[0]
+                if (
+                    self.player.rect.collidepoint(projectile[0])
+                    and not self.player.is_dashing
                 ):
                     self.projectiles.remove(projectile)
-                    for _ in range(30):
-                        angle = random.random() * math.pi * 2
-                        s = Spark(
-                            projectile[0].copy(),
-                            angle,
-                            random.random() + 2,
-                        )
-                        self.sparks.append(s)
-
-                        speed = random.random() * 5
-                        p = Particle(
-                            self.assets,
-                            "particle",
-                            projectile[0].copy(),
-                            velocity=Vec2(
-                                math.cos(angle + math.pi) * speed * 0.5,
-                                math.sin(angle + math.pi) * speed * 0.5,
-                            ),
-                            frame=random.randint(0, 3),
-                        )
-                        self.particles.append(p)
+                    self._graphical_explosion(projectile[0])
 
                 if projectile[2] > 360:
                     self.projectiles.remove(projectile)
@@ -204,6 +194,29 @@ class Game:
             self._update_screen()
 
             clock.tick(60)
+
+    def _graphical_explosion(self, position: Vec2) -> None:
+        for _ in range(30):
+            angle = random.random() * math.pi * 2
+            s = Spark(
+                position.copy(),
+                angle,
+                random.random() + 2,
+            )
+            self.sparks.append(s)
+
+            speed = random.random() * 5
+            p = Particle(
+                self.assets,
+                "particle",
+                position.copy(),
+                velocity=Vec2(
+                    math.cos(angle + math.pi) * speed * 0.5,
+                    math.sin(angle + math.pi) * speed * 0.5,
+                ),
+                frame=random.randint(0, 3),
+            )
+            self.particles.append(p)
 
     def _update_camera(self) -> Vec2:
         self.camera_offset += (

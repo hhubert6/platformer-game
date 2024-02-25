@@ -113,3 +113,7 @@ class Player(Entity):
     def dash(self) -> None:
         if self._dashing == 0:
             self._dashing = 60
+
+    @property
+    def is_dashing(self) -> bool:
+        return self._dashing >= 50
