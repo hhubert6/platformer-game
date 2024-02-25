@@ -1,3 +1,4 @@
+import math
 import random
 from typing import Any
 
@@ -7,6 +8,7 @@ from pygame import Vector2 as Vec2
 
 from src.entities.Entity import Entity
 from src.entities.Player import Player
+from src.Spark import Spark
 from src.Tilemap import Tilemap
 
 
@@ -15,12 +17,14 @@ class Enemy(Entity):
         self,
         assets: dict[str, Any],
         projectiles: list[list],
+        sparks: list[Spark],
         player: Player,
         position: Vec2,
         size: Vec2,
     ) -> None:
         super().__init__(assets, "enemy", position, size)
         self._projectiles = projectiles
+        self._sparks = sparks
         self._player = player
         self._walking = 0
 
@@ -61,10 +65,28 @@ class Enemy(Entity):
                 pos = Vec2(self.rect.centerx - 7, self.rect.centery)
                 dir = -1.5
                 self._projectiles.append([pos, dir, 0])
+
+                for _ in range(4):
+                    self._sparks.append(
+                        Spark(
+                            pos.copy(),
+                            random.random() - 0.5 + math.pi,
+                            2 + random.random(),
+                        )
+                    )
             if not self._flip and dist.x > 0:
                 pos = Vec2(self.rect.centerx + 7, self.rect.centery)
                 dir = 1.5
                 self._projectiles.append([pos, dir, 0])
+
+                for _ in range(4):
+                    self._sparks.append(
+                        Spark(
+                            pos.copy(),
+                            random.random() - 0.5,
+                            2 + random.random(),
+                        )
+                    )
 
     def render(self, display: Surface, offset: Vec2 = Vec2(0, 0)) -> None:
         super().render(display, offset)

@@ -12,6 +12,7 @@ from src.Clouds import Clouds
 from src.entities.Enemy import Enemy
 from src.entities.Player import Player
 from src.Particle import Particle
+from src.Spark import Spark
 from src.Tilemap import Tilemap
 from src.utils import load_image, load_images
 
@@ -56,6 +57,7 @@ class Game:
         self.clouds = Clouds(self.assets["clouds"])
         self.particles: list[Particle] = []
         self.projectiles: list[list] = []  # projectile = [Vec2, direction, timer]
+        self.sparks: list[Spark] = []
         self.enemies: list[Enemy] = []
         self.leaf_spawners: list[pygame.Rect] = []
         self.camera_offset = Vec2(0, 0)
@@ -68,6 +70,7 @@ class Game:
     def load_level(self, map_id: int) -> None:
         self.particles.clear()
         self.projectiles.clear()
+        self.sparks.clear()
         self.enemies.clear()
         self.leaf_spawners.clear()
         self.camera_offset = Vec2(0, 0)
@@ -82,6 +85,7 @@ class Game:
                 Enemy(
                     self.assets,
                     self.projectiles,
+                    self.sparks,
                     self.player,
                     Vec2(enemy["pos"]),
                     Vec2(8, 15),
@@ -114,15 +118,56 @@ class Game:
             for projectile in self.projectiles.copy():
                 projectile[0].x += projectile[1]
                 projectile[2] += 1
-                if (
-                    self.tilemap.check_solid_tile(projectile[0])
-                    or projectile[2] > 360
-                    or (
-                        self.player._dashing < 50
-                        and self.player.rect.collidepoint(projectile[0])
-                    )
+                if self.tilemap.check_solid_tile(projectile[0]):
+                    self.projectiles.remove(projectile)
+                    for _ in range(4):
+                        if projectile[1] < 0:
+                            s = Spark(
+                                projectile[0].copy(),
+                                random.random() - 0.5,
+                                2 + random.random(),
+                            )
+                            self.sparks.append(s)
+                        if projectile[1] > 0:
+                            s = Spark(
+                                projectile[0].copy(),
+                                random.random() - 0.5 + math.pi,
+                                2 + random.random(),
+                            )
+                            self.sparks.append(s)
+
+                if self.player._dashing < 50 and self.player.rect.collidepoint(
+                    projectile[0]
                 ):
                     self.projectiles.remove(projectile)
+                    for _ in range(30):
+                        angle = random.random() * math.pi * 2
+                        s = Spark(
+                            projectile[0].copy(),
+                            angle,
+                            random.random() + 2,
+                        )
+                        self.sparks.append(s)
+
+                        speed = random.random() * 5
+                        p = Particle(
+                            self.assets,
+                            "particle",
+                            projectile[0].copy(),
+                            velocity=Vec2(
+                                math.cos(angle + math.pi) * speed * 0.5,
+                                math.sin(angle + math.pi) * speed * 0.5,
+                            ),
+                            frame=random.randint(0, 3),
+                        )
+                        self.particles.append(p)
+
+                if projectile[2] > 360:
+                    self.projectiles.remove(projectile)
+
+            for spark in self.sparks.copy():
+                if spark.update():
+                    self.sparks.remove(spark)
 
             # spawn leafs
             for spawner in self.leaf_spawners:
@@ -140,8 +185,9 @@ class Game:
             self.tilemap.render(self.display, render_offset)
             for enemy in self.enemies:
                 enemy.render(self.display, render_offset)
+            self.player.render(self.display, render_offset)
             for projectile in self.projectiles:
-                img: pygame.Surface = self.assets["projectile"]
+                img: pygame.Surface = self.assets["projectile"].copy()
                 self.display.blit(
                     img,
                     (
@@ -149,7 +195,8 @@ class Game:
                         projectile[0].y - img.get_height() / 2 - render_offset.y,
                     ),
                 )
-            self.player.render(self.display, render_offset)
+            for spark in self.sparks:
+                spark.render(self.display, render_offset)
             for particle in self.particles:
                 particle.render(self.display, render_offset)
 
