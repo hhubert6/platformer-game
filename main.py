@@ -61,6 +61,7 @@ class Game:
         self.enemies: list[Enemy] = []
         self.leaf_spawners: list[pygame.Rect] = []
         self.camera_offset = Vec2(0, 0)
+        self.dead = 0
 
         self.movement = [False, False]
         self.player = Player(self.assets, self.particles, Vec2(0, 0), Vec2(8, 15))
@@ -74,6 +75,7 @@ class Game:
         self.enemies.clear()
         self.leaf_spawners.clear()
         self.camera_offset = Vec2(0, 0)
+        self.dead = 0
 
         self.tilemap.load(f"assets/maps/{map_id}.json")
 
@@ -101,8 +103,13 @@ class Game:
 
         while True:
             # update each game element
-            player_movement = Vec2(self.movement[1] - self.movement[0], 0)
-            self.player.update(self.tilemap, player_movement)
+            if self.dead == 0:
+                player_movement = Vec2(self.movement[1] - self.movement[0], 0)
+                self.player.update(self.tilemap, player_movement)
+            elif self.dead > 0:
+                self.dead += 1
+                if self.dead > 40:
+                    self.load_level(0)
 
             self.clouds.update()
 
@@ -151,6 +158,7 @@ class Game:
                 ):
                     self.projectiles.remove(projectile)
                     self._graphical_explosion(projectile[0])
+                    self.dead += 1
 
                 if projectile[2] > 360:
                     self.projectiles.remove(projectile)
@@ -175,7 +183,8 @@ class Game:
             self.tilemap.render(self.display, render_offset)
             for enemy in self.enemies:
                 enemy.render(self.display, render_offset)
-            self.player.render(self.display, render_offset)
+            if self.dead == 0:
+                self.player.render(self.display, render_offset)
             for projectile in self.projectiles:
                 img: pygame.Surface = self.assets["projectile"].copy()
                 self.display.blit(
