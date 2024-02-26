@@ -24,9 +24,12 @@ class Player(Entity):
         self._jumps = 1
         self._wall_slide = False
         self._dashing = 0
+        self._dead = False
 
     def set_position(self, position: Vec2) -> None:
         self._position = position
+        self._dead = False
+        self._air_time = 0
 
     def update(self, tilemap: Tilemap, movement: Vec2 = Vec2(0, 0)) -> None:
         super().update(tilemap, movement)
@@ -37,6 +40,9 @@ class Player(Entity):
             self._velocity.x = min(self._velocity.x + 0.1, 0)
 
         self._air_time += 1
+
+        if self._air_time > 120:
+            self._dead = True
 
         if self._collisions["down"]:
             self._air_time = 0
@@ -117,3 +123,7 @@ class Player(Entity):
     @property
     def is_dashing(self) -> bool:
         return self._dashing >= 50
+
+    @property
+    def is_dead(self) -> bool:
+        return self._dead

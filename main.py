@@ -103,6 +103,9 @@ class Game:
 
         while True:
             # update each game element
+            if self.player.is_dead:
+                self.dead += 1
+
             if self.dead == 0:
                 player_movement = Vec2(self.movement[1] - self.movement[0], 0)
                 self.player.update(self.tilemap, player_movement)
