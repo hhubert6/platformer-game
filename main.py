@@ -62,6 +62,7 @@ class Game:
         self.leaf_spawners: list[pygame.Rect] = []
         self.camera_offset = Vec2(0, 0)
         self.dead = 0
+        self.screenshake = 0
 
         self.movement = [False, False]
         self.player = Player(self.assets, self.particles, Vec2(0, 0), Vec2(8, 15))
@@ -103,7 +104,10 @@ class Game:
 
         while True:
             # update each game element
-            if self.player.is_dead:
+            self.screenshake = max(0, self.screenshake - 1)
+
+            if self.player.is_dead and self.dead == 0:
+                self.screenshake = max(16, self.screenshake)
                 self.dead += 1
 
             if self.dead == 0:
@@ -119,6 +123,7 @@ class Game:
             for enemy in self.enemies.copy():
                 enemy.update(self.tilemap)
                 if self.player.is_dashing and self.player.rect.colliderect(enemy.rect):
+                    self.screenshake = max(20, self.screenshake)
                     self.enemies.remove(enemy)
                     self._graphical_explosion(Vec2(enemy.rect.center))
                     self.sparks.append(
@@ -162,6 +167,7 @@ class Game:
                     self.projectiles.remove(projectile)
                     self._graphical_explosion(projectile[0])
                     self.dead += 1
+                    self.screenshake = max(16, self.screenshake)
 
                 if projectile[2] > 360:
                     self.projectiles.remove(projectile)
@@ -257,8 +263,13 @@ class Game:
                     self.movement[0] = False
 
     def _update_screen(self) -> None:
+        screenshake_offset = (
+            random.random() * self.screenshake - self.screenshake / 2,
+            random.random() * self.screenshake - self.screenshake / 2,
+        )
         self.screen.blit(
-            pygame.transform.scale(self.display, self.screen.get_size()), (0, 0)
+            pygame.transform.scale(self.display, self.screen.get_size()),
+            screenshake_offset,
         )
         pygame.display.update()
 

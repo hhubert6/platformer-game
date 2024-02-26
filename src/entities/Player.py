@@ -115,6 +115,7 @@ class Player(Entity):
         elif self._jumps > 0:
             self._velocity.y = -3
             self._jumps -= 1
+        self._air_time = 5
 
     def dash(self) -> None:
         if self._dashing == 0:
