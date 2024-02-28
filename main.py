@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import os
 import random
 import sys
 
@@ -53,6 +54,7 @@ class Game:
             ),
         }
 
+        self.num_of_maps = len(os.listdir("assets/maps"))
         self.tilemap = Tilemap(self.assets, tile_size=16)
         self.clouds = Clouds(self.assets["clouds"])
         self.particles: list[Particle] = []
@@ -67,7 +69,9 @@ class Game:
         self.movement = [False, False]
         self.player = Player(self.assets, self.particles, Vec2(0, 0), Vec2(8, 15))
 
-        self.load_level(0)
+        self.level = 0
+        self.transition = 0
+        self.load_level(self.level)
 
     def load_level(self, map_id: int) -> None:
         self.particles.clear()
@@ -77,6 +81,7 @@ class Game:
         self.leaf_spawners.clear()
         self.camera_offset = Vec2(0, 0)
         self.dead = 0
+        self.transition = -30
 
         self.tilemap.load(f"assets/maps/{map_id}.json")
 
@@ -106,6 +111,14 @@ class Game:
             # update each game element
             self.screenshake = max(0, self.screenshake - 1)
 
+            if len(self.enemies) == 0:
+                self.transition += 1
+                if self.transition > 30:
+                    self.level = min(self.level + 1, self.num_of_maps - 1)
+                    self.load_level(self.level)
+            if self.transition < 0:
+                self.transition += 1
+
             if self.player.is_dead and self.dead == 0:
                 self.screenshake = max(16, self.screenshake)
                 self.dead += 1
@@ -115,8 +128,9 @@ class Game:
                 self.player.update(self.tilemap, player_movement)
             elif self.dead > 0:
                 self.dead += 1
+                self.transition = min(30, self.transition + 1)
                 if self.dead > 40:
-                    self.load_level(0)
+                    self.load_level(self.level)
 
             self.clouds.update()
 
@@ -263,6 +277,17 @@ class Game:
                     self.movement[0] = False
 
     def _update_screen(self) -> None:
+        if self.transition != 0:
+            transition_surf = pygame.Surface(self.display.get_size())
+            pygame.draw.circle(
+                transition_surf,
+                (255, 255, 255),
+                self.display_center,
+                (30 - abs(self.transition)) * 8,
+            )
+            transition_surf.set_colorkey((255, 255, 255))
+            self.display.blit(transition_surf, (0, 0))
+
         screenshake_offset = (
             random.random() * self.screenshake - self.screenshake / 2,
             random.random() * self.screenshake - self.screenshake / 2,

@@ -45,9 +45,9 @@ class Entity:
         self._last_movement = movement
         frame_movement = movement + self._velocity
 
-        if frame_movement.x > 0:
+        if movement.x > 0:
             self._flip = False
-        elif frame_movement.x < 0:
+        elif movement.x < 0:
             self._flip = True
 
         self._position.x += frame_movement.x
