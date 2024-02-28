@@ -22,7 +22,8 @@ class Game:
     def __init__(self) -> None:
         pygame.init()
         self.screen = pygame.display.set_mode((960, 720))
-        self.display = pygame.Surface((320, 240))
+        self.display = pygame.Surface((320, 240), pygame.SRCALPHA)
+        self.display_2 = pygame.Surface(self.display.get_size())
         self.display_center = Vec2(self.display.get_size()) / 2
 
         self.assets = {
@@ -200,9 +201,10 @@ class Game:
                     )
 
             # render everything to the display
-            self.display.blit(self.assets["background"], (0, 0))
+            self.display.fill((0, 0, 0, 0))
+            self.display_2.blit(self.assets["background"], (0, 0))
             render_offset = self._update_camera()
-            self.clouds.render(self.display, render_offset)
+            self.clouds.render(self.display_2, render_offset)
             self.tilemap.render(self.display, render_offset)
             for enemy in self.enemies:
                 enemy.render(self.display, render_offset)
@@ -219,6 +221,14 @@ class Game:
                 )
             for spark in self.sparks:
                 spark.render(self.display, render_offset)
+
+            display_mask = pygame.mask.from_surface(self.display)
+            display_sillhouette = display_mask.to_surface(
+                setcolor=(0, 0, 0, 180), unsetcolor=(0, 0, 0, 0)
+            )
+            for offset in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
+                self.display_2.blit(display_sillhouette, offset)
+
             for particle in self.particles:
                 particle.render(self.display, render_offset)
 
@@ -288,12 +298,13 @@ class Game:
             transition_surf.set_colorkey((255, 255, 255))
             self.display.blit(transition_surf, (0, 0))
 
+        self.display_2.blit(self.display, (0, 0))
         screenshake_offset = (
             random.random() * self.screenshake - self.screenshake / 2,
             random.random() * self.screenshake - self.screenshake / 2,
         )
         self.screen.blit(
-            pygame.transform.scale(self.display, self.screen.get_size()),
+            pygame.transform.scale(self.display_2, self.screen.get_size()),
             screenshake_offset,
         )
         pygame.display.update()
